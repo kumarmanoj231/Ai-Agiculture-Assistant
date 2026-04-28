@@ -1,0 +1,9 @@
+streamlit
+pandas
+plotly
+reportlab
+python-dotenv
+langchain-groq
+langchain-core
+pydantic
+requests
