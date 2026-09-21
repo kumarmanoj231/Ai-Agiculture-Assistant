@@ -2,6 +2,15 @@
 
 GreenCure AI is a Streamlit-based agriculture assistant that combines a Random Forest crop recommendation model, weather forecasting, and Groq-powered AI guidance for farming decisions.
 
+<p align="center">
+  <img
+    src="images/preview.png"
+    alt="GreenCure AI - Agriculture Assistant Preview"
+    width="100%"
+  />
+</p>
+
+
 ## ✨ Features
 
 - 🌾 ML-based crop prediction using N, P, K, temperature, humidity, pH and rainfall
@@ -89,8 +98,6 @@ WEATHER_API_KEY=your_weatherapi_key
 WEATHER_BASE_URL=https://api.weatherapi.com/v1
 ```
 
-Never commit `.env`.
-
 ### 5. Start Streamlit
 
 ```bash
@@ -116,20 +123,3 @@ WEATHER_BASE_URL = "https://api.weatherapi.com/v1"
 ```
 
 7. Save and reboot/redeploy the app.
-
-## 🔐 Security
-
-- `.env` is ignored by Git.
-- Streamlit Cloud secrets are read at runtime.
-- Do not put API keys in Python files, README files, or `.env.example`.
-- If a key is accidentally pushed to GitHub, revoke it and create a replacement.
-
-## ⚠️ Notes
-
-The market-analysis feature provides AI-generated guidance and should not be treated as a guaranteed live market-price feed. Verify prices with official or local mandi sources before making financial decisions.
-
-The disease-diagnosis feature is AI-assisted guidance, not a substitute for professional agricultural or plant-pathology advice.
-
-## 👨‍💻 Author
-
-**Manoj Kumar Lodha**
