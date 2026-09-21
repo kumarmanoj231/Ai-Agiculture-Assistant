@@ -1,90 +1,95 @@
-import streamlit as st
-import requests
 import os
+from urllib.parse import quote
+
+import requests
+import streamlit as st
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
 
-API_KEY = os.getenv("WEATHER_API_KEY")
-BASE_URL = os.getenv("WEATHER_BASE_URL")
+
+def get_secret(name: str, default=None):
+    try:
+        value = st.secrets.get(name)
+        if value:
+            return value
+    except Exception:
+        pass
+    return os.getenv(name, default)
+
+
+API_KEY = get_secret("WEATHER_API_KEY")
+BASE_URL = get_secret("WEATHER_BASE_URL", "https://api.weatherapi.com/v1")
 
 
 def show_weather():
-
     st.markdown("""
     <style>
     .weather-card {
-        background: rgba(255, 255, 255, 0.08);
+        background: rgba(255,255,255,0.08);
         border-radius: 15px;
         padding: 15px;
         text-align: center;
         backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        transition: 0.3s;
-    }
-
-    .weather-card:hover {
-        background: rgba(255, 255, 255, 0.15);
-        transform: scale(1.03);
+        border: 1px solid rgba(255,255,255,0.1);
     }
     </style>
     """, unsafe_allow_html=True)
 
-    unit = "Celsius"
-    city = st.text_input("Enter City", "Guna")
-    days = 7
+    city = st.text_input("Enter City", "Guna", key="weather_city")
 
-    url = f"{BASE_URL}/forecast.json?key={API_KEY}&q={city}&days={days}&aqi=yes&alerts=no"
-    try:
-        r = requests.get(url)
-        r.raise_for_status()
-    except Exception as e:
-        st.error("Weather API failed")
+    if not API_KEY:
+        st.warning("Weather service is not configured. Add WEATHER_API_KEY to your Streamlit Secrets.")
         return
 
-    if r.status_code == 200:
+    if not city.strip():
+        st.info("Enter a city to view the forecast.")
+        return
 
-        data = r.json()
-        loc = data['location']['name']
-        country = data['location']['country']
+    url = f"{BASE_URL.rstrip('/')}/forecast.json"
+    params = {
+        "key": API_KEY,
+        "q": city.strip(),
+        "days": 7,
+        "aqi": "yes",
+        "alerts": "no",
+    }
 
-        temp = data['current']['temp_c'] if unit == "Celsius" else data['current']['temp_f']
-        cond = data['current']['condition']['text']
-        icon = "https:" + data['current']['condition']['icon']
+    try:
+        response = requests.get(url, params=params, timeout=15)
+        response.raise_for_status()
+        data = response.json()
+    except requests.RequestException as exc:
+        st.error(f"Weather API request failed: {exc}")
+        return
+    except ValueError:
+        st.error("Weather API returned an invalid response.")
+        return
 
-        st.write(f"📍 {loc}, {country}")
+    location = data.get("location", {})
+    current = data.get("current", {})
+    forecast_days = data.get("forecast", {}).get("forecastday", [])
 
-        
-        forecast_days = data['forecast']['forecastday']
+    st.write(f"📍 {location.get('name', city)}, {location.get('country', '')}")
+    st.metric("Current Temperature", f"{current.get('temp_c', 'N/A')}°C")
+    st.caption(current.get("condition", {}).get("text", "Current conditions unavailable"))
 
-        cols = st.columns(days)
-
-        for i, day in enumerate(forecast_days):
-
-            date = day['date']
-            min_temp = day['day']['mintemp_c'] if unit == "Celsius" else day['day']['mintemp_f']
-            max_temp = day['day']['maxtemp_c'] if unit == "Celsius" else day['day']['maxtemp_f']
-            condition = day['day']['condition']['text']
-            icon_url = "https:" + day['day']['condition']['icon']
-
-            with cols[i]:
-
-                st.markdown(f"""
+    cols = st.columns(min(7, max(1, len(forecast_days))))
+    for index, day in enumerate(forecast_days[:7]):
+        forecast = day.get("day", {})
+        condition = forecast.get("condition", {})
+        icon = condition.get("icon", "")
+        icon_url = f"https:{icon}" if icon.startswith("//") else icon
+        with cols[index % len(cols)]:
+            st.markdown(
+                f"""
                 <div class="weather-card">
-                    <div style="font-size:14px; opacity:0.7;">{date}</div>
-                    <img src="{icon_url}" width="60">
-                    <div style="font-size:18px; margin-top:5px;">
-                        🔺 {max_temp}°{unit[0]}
-                    </div>
-                    <div style="font-size:14px; opacity:0.8;">
-                        🔻 {min_temp}°{unit[0]}
-                    </div>
-                    <div style="font-size:13px; margin-top:6px; opacity:0.6;">
-                        {condition}
-                    </div>
+                    <div style="font-size:14px;opacity:.7">{day.get('date','')}</div>
+                    <img src="{icon_url}" width="60" alt="weather">
+                    <div style="font-size:18px">🔺 {forecast.get('maxtemp_c','N/A')}°C</div>
+                    <div style="font-size:14px">🔻 {forecast.get('mintemp_c','N/A')}°C</div>
+                    <div style="font-size:13px;margin-top:6px">{condition.get('text','')}</div>
                 </div>
-                """, unsafe_allow_html=True)
-
-    else:
-        st.error("City not found!")
+                """,
+                unsafe_allow_html=True,
+            )

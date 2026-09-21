@@ -1,5 +1,6 @@
 streamlit
 pandas
+numpy
 plotly
 reportlab
 python-dotenv
@@ -7,3 +8,4 @@ langchain-groq
 langchain-core
 pydantic
 requests
+scikit-learn==1.8.0
