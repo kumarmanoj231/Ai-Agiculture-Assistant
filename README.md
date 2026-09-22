@@ -1,6 +1,6 @@
-# 🌱 GreenCure AI — Agriculture Assistant 
+# 🌱 GreenCure AI — Agriculture Assistant
 
-GreenCure AI is a Streamlit-based agriculture assistant that combines a Random Forest crop recommendation model, weather forecasting, and Groq-powered AI guidance for farming decisions. 
+GreenCure AI is a Streamlit-based agriculture assistant that combines a Random Forest crop recommendation model, weather forecasting, and Groq-powered AI guidance for farming decisions.
 
 <p align="center">
   <img
@@ -10,7 +10,7 @@ GreenCure AI is a Streamlit-based agriculture assistant that combines a Random F
   />
 </p>
 
-This an academic project which is made in group  in contibution with @Mahipal-Tomar
+
 ## ✨ Features
 
 - 🌾 ML-based crop prediction using N, P, K, temperature, humidity, pH and rainfall
